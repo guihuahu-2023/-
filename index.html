@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6f2">
+  <meta name="description" content="纸间，一个免费的小红书图文排版工作台。粘贴文案、选择模板，生成 3:4 高清图片，支持手机、平板和电脑。">
+  <title>纸间 · 小红书排版</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="templates.js"></script>
+  <script defer src="renderer.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 8.5a2.5 2.5 0 0 1 4.8 1c0 1.8-2.5 2.2-2.5 3.5m0 3h.01"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L6 21"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 5 4 10l5 5M4 10h9a7 7 0 0 1 7 7v2"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 5 5 5-5 5m5-5h-9a7 7 0 0 0-7 7v2"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h7m4 0h5M4 12h2m4 0h10M4 18h10m4 0h2"/><circle cx="13" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 6V3h16v3M12 3v18m-4 0h8"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-break" viewBox="0 0 24 24"><path d="M5 8V4h14v4M5 16v4h14v-4M3 12h3m3 0h3m3 0h3m3 0h.01"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M4 12V7h6v6c0 4-2 5-5 5m9-6V7h6v6c0 4-2 5-5 5"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Zm0 0v6h6M8 13h8m-8 4h5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="m19 21 2-2V7l-4-4H5L3 5v14l2 2ZM7 3v6h9V3M7 21v-8h10v8"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  </svg>
+
+  <header class="app-header">
+    <a class="brand" href="./" aria-label="纸间，小红书排版首页">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
+      <span class="brand-name">纸间<span class="brand-description">小红书排版</span></span>
+    </a>
+    <div class="header-divider" aria-hidden="true"></div>
+    <span id="saveStatus" class="save-status" role="status">已保存到本机</span>
+    <nav class="header-actions" aria-label="笔记与文件">
+      <button id="newNote" class="button header-button" type="button" aria-label="新建笔记" title="新建笔记"><svg class="icon"><use href="#i-plus"/></svg><span>新建</span></button>
+      <button id="notesBtn" class="button header-button" type="button" aria-label="我的笔记" title="我的笔记"><svg class="icon"><use href="#i-folder"/></svg><span>我的笔记</span></button>
+      <span class="action-divider" aria-hidden="true"></span>
+      <button id="importProjectBtn" class="button icon-button secondary-action" type="button" title="导入笔记文件" aria-label="导入笔记文件"><svg class="icon"><use href="#i-upload"/></svg></button>
+      <button id="exportProjectBtn" class="button icon-button secondary-action" type="button" title="备份笔记文件" aria-label="备份笔记文件"><svg class="icon"><use href="#i-save"/></svg></button>
+      <button id="helpBtn" class="button icon-button" type="button" title="使用帮助" aria-label="使用帮助"><svg class="icon"><use href="#i-help"/></svg></button>
+      <button id="exportBtn" class="button primary export-button" type="button"><svg class="icon"><use href="#i-download"/></svg><span>导出图片</span></button>
+    </nav>
+  </header>
+
+  <nav class="mobile-tabs" aria-label="工作台面板">
+    <button class="mobile-tab is-active" data-tab="editor" type="button" aria-selected="true"><svg class="icon"><use href="#i-note"/></svg>文案</button>
+    <button class="mobile-tab" data-tab="preview" type="button" aria-selected="false"><svg class="icon"><use href="#i-eye"/></svg>预览</button>
+    <button class="mobile-tab" data-tab="style" type="button" aria-selected="false"><svg class="icon"><use href="#i-grid"/></svg>样式</button>
+  </nav>
+
+  <main class="workspace">
+    <section class="editor-panel panel is-mobile-active" data-panel="editor" aria-label="编辑文案">
+      <div class="panel-heading">
+        <div><span class="eyebrow">WRITE YOUR STORY</span><h1>把想法写下来<span class="heading-dot">.</span></h1></div>
+        <span class="small-badge">文案编辑</span>
+      </div>
+      <div class="title-field">
+        <div class="field-label-row"><label for="titleInput">笔记标题</label><label class="compact-switch"><input id="showTitle" type="checkbox" checked><span>显示标题</span></label></div>
+        <textarea id="titleInput" class="title-input" rows="2" maxlength="2000" placeholder="在这里输入或粘贴标题，回车可换行…" spellcheck="false" aria-describedby="titleHint"></textarea>
+        <div class="title-size-control" role="group" aria-label="调整标题大小">
+          <div class="title-size-heading"><label for="titleSizeInline">标题字号</label><button id="titleSizeReset" type="button" class="title-size-reset" title="恢复默认标题字号 64">恢复默认</button></div>
+          <div class="title-size-row">
+            <button id="titleSizeDecrease" type="button" class="title-size-step" aria-label="缩小标题" title="标题缩小 2">A−</button>
+            <input id="titleSizeInline" type="range" min="24" max="120" step="1" value="64" aria-label="标题大小滑块">
+            <button id="titleSizeIncrease" type="button" class="title-size-step" aria-label="放大标题" title="标题放大 2">A＋</button>
+            <input id="titleSizeNumber" type="number" min="24" max="120" step="1" value="64" inputmode="numeric" aria-label="标题字号数值">
+          </div>
+          <div class="title-size-scale" aria-hidden="true"><span>小 · 24</span><span>大 · 120</span></div>
+        </div>
+        <div class="text-font-controls" role="group" aria-label="标题字体样式">
+          <label class="sr-only" for="titleFontInline">标题字体</label><select id="titleFontInline" aria-label="标题字体"></select>
+          <button type="button" data-text-style="titleBold" class="font-style-button" aria-label="标题加粗" aria-pressed="true" title="标题加粗"><strong>B</strong></button>
+          <button type="button" data-text-style="titleItalic" class="font-style-button" aria-label="标题斜体" aria-pressed="false" title="标题斜体"><em>I</em></button>
+        </div>
+        <div class="inline-color-control"><label for="titleColorInline">标题颜色</label><input id="titleColorInline" type="color" value="#242d32"><span data-color-value="title">#242D32</span></div>
+        <div class="range-field text-opacity-control"><div class="field-label-row"><label for="titleOpacityInline">标题不透明度</label><output for="titleOpacityInline" data-value-for="titleOpacityInline">100%</output></div><input id="titleOpacityInline" type="range" min="0" max="1" step="0.01" value="1"></div>
+        <p id="titleHint" class="field-hint">字号、颜色、不透明度独立可调，预览与导出同步；0% 完全透明，100% 完全显示。</p>
+      </div>
+      <div class="body-editor">
+        <div class="field-label-row"><label for="bodyInput">正文内容</label><span class="muted editor-markdown">支持轻量 Markdown</span></div>
+        <div class="title-size-control body-size-control" role="group" aria-label="调整全文正文大小和颜色">
+          <div class="title-size-heading"><label for="bodySizeInline">全文正文字号</label><button id="bodySizeReset" type="button" class="title-size-reset">恢复默认</button></div>
+          <div class="title-size-row">
+            <button id="bodySizeDecrease" type="button" class="title-size-step" aria-label="缩小正文">A−</button>
+            <input id="bodySizeInline" type="range" min="16" max="72" step="1" value="32" aria-label="正文大小滑块">
+            <button id="bodySizeIncrease" type="button" class="title-size-step" aria-label="放大正文">A＋</button>
+            <input id="bodySizeNumber" class="size-number" type="number" min="16" max="72" step="1" value="32" inputmode="numeric" aria-label="正文字号数值">
+          </div>
+          <div class="title-size-scale" aria-hidden="true"><span>小 · 16</span><span>大 · 72</span></div>
+        <div class="text-font-controls" role="group" aria-label="正文字体样式">
+          <label class="sr-only" for="bodyFontInline">正文字体</label><select id="bodyFontInline" aria-label="正文字体"></select>
+          <button type="button" data-text-style="bodyBold" class="font-style-button" aria-label="正文加粗" aria-pressed="false" title="正文加粗"><strong>B</strong></button>
+          <button type="button" data-text-style="bodyItalic" class="font-style-button" aria-label="正文斜体" aria-pressed="false" title="正文斜体"><em>I</em></button>
+        </div>
+          <div class="inline-color-control"><label for="textColorInline">正文颜色</label><input id="textColorInline" type="color" value="#242d32"><span data-color-value="text">#242D32</span></div>
+          <div class="range-field text-opacity-control"><div class="field-label-row"><label for="bodyOpacityInline">正文不透明度</label><output for="bodyOpacityInline" data-value-for="bodyOpacityInline">100%</output></div><input id="bodyOpacityInline" type="range" min="0" max="1" step="0.01" value="1"></div>
+        </div>
+        <div class="editor-toolbar" role="toolbar" aria-label="正文排版工具">
+          <button data-format="h2" type="button" title="小标题" aria-label="插入小标题">H<span class="subscript">2</span></button>
+          <button data-format="bold" class="format-bold" type="button" title="加粗" aria-label="加粗选中文字">B</button>
+          <button data-format="highlight" class="format-highlight" type="button" title="重点标记" aria-label="高亮选中文字">A</button>
+          <button data-format="italic" class="format-italic" type="button" title="斜体" aria-label="斜体选中文字">I</button>
+          <span class="toolbar-separator" aria-hidden="true"></span>
+          <button data-format="quote" type="button" title="引用" aria-label="插入引用"><svg class="icon"><use href="#i-quote"/></svg></button>
+          <button data-format="list" type="button" title="列表" aria-label="插入列表"><svg class="icon"><use href="#i-list"/></svg></button>
+          <button data-format="break" type="button" title="在此分页" aria-label="插入手动分页"><svg class="icon"><use href="#i-break"/></svg></button>
+          <button data-format="image" type="button" title="插入图片" aria-label="上传正文图片"><svg class="icon"><use href="#i-image"/></svg></button>
+          <span class="toolbar-spacer"></span>
+          <button id="undoBtn" type="button" title="撤销" aria-label="撤销"><svg class="icon"><use href="#i-undo"/></svg></button>
+          <button id="redoBtn" type="button" title="重做" aria-label="重做"><svg class="icon"><use href="#i-redo"/></svg></button>
+        </div>
+        <textarea id="bodyInput" class="body-input" placeholder="粘贴或输入你的正文…&#10;&#10;好内容，值得一张好看的卡片。&#10;&#10;用 ## 添加小标题&#10;用 **文字** 强调重点&#10;用 --- 决定在哪里翻页" spellcheck="false" aria-describedby="formattingHint"></textarea>
+        <div class="editor-status"><span><strong id="charCount">0 字</strong></span><label class="compact-switch"><input id="autoPaginate" type="checkbox" checked><span>自动分页</span></label></div>
+      </div>
+      <div id="formattingHint" class="writing-tip"><svg class="icon"><use href="#i-note"/></svg><p>写作时专注文案，排版交给纸间。<br><span>长文自动分成多张卡片，也可用 <code>---</code> 手动分页。</span></p></div>
+      <div class="panel-bottom"><span class="local-dot" aria-hidden="true"></span>内容和图片仅保存在当前浏览器</div>
+    </section>
+
+    <section class="preview-panel panel" data-panel="preview" aria-label="卡片预览">
+      <div class="preview-toolbar">
+        <div class="preview-label"><span class="live-dot" aria-hidden="true"></span><h2>实时预览</h2><span class="ratio-badge">3:4</span></div>
+        <div class="preview-tools"><label class="sr-only" for="zoomSelect">预览缩放</label><select id="zoomSelect" aria-label="预览缩放"><option value="fit">适应画布</option><option value=".5">50%</option><option value=".75">75%</option><option value="1">100%</option></select></div>
+      </div>
+      <div class="canvas-workspace">
+        <div id="canvasStage" class="canvas-stage"><canvas id="previewCanvas" width="900" height="1200" aria-label="当前卡片预览">你的浏览器暂不支持画布，请使用新版浏览器。</canvas></div>
+        <p id="previewMessage" class="preview-message" role="status">每一份表达，都有自己的样子</p>
+      </div>
+      <div class="preview-bottom">
+        <div class="page-navigation"><button id="prevPage" class="button icon-button page-arrow" type="button" aria-label="上一张"><svg class="icon"><use href="#i-left"/></svg></button><span id="pageCount" class="page-count">1 / 1</span><button id="nextPage" class="button icon-button page-arrow" type="button" aria-label="下一张"><svg class="icon"><use href="#i-right"/></svg></button></div>
+        <button id="exportCurrentBtn" class="button current-export" type="button"><svg class="icon"><use href="#i-download"/></svg>导出这一张</button>
+      </div>
+      <div id="pageStrip" class="page-strip" aria-label="全部卡片缩略图"></div>
+      <div class="preview-footer">3:4 画布<span>·</span>本地保存<span>·</span>高清导出</div>
+    </section>
+
+    <aside class="style-panel panel" data-panel="style" aria-label="模板与样式设置">
+      <div class="style-tabs" role="tablist" aria-label="样式面板"><button class="style-tab is-active" data-style-tab="templates" role="tab" aria-selected="true" aria-controls="templatesPane" type="button"><svg class="icon"><use href="#i-grid"/></svg>模板灵感</button><button class="style-tab" data-style-tab="settings" role="tab" aria-selected="false" aria-controls="settingsPane" type="button"><svg class="icon"><use href="#i-sliders"/></svg>自定义</button></div>
+      <div id="templatesPane" class="templates-pane" role="tabpanel">
+        <div class="template-intro"><div><h2>找到你的风格</h2><p>一键换装，让文字自在表达。</p></div><span id="templateTotal" class="free-badge">全部免费</span></div>
+        <div class="search-field"><svg class="icon"><use href="#i-search"/></svg><label class="sr-only" for="templateSearch">搜索模板</label><input id="templateSearch" type="search" placeholder="搜索模板 / 风格" autocomplete="off"></div>
+        <div id="templateFilters" class="template-filters" aria-label="模板分类"></div>
+        <div id="templateGrid" class="template-grid" aria-label="模板列表"></div>
+        <div class="custom-template-heading"><h3>我的风格</h3><button id="saveTemplateBtn" class="button text-button" type="button"><svg class="icon"><use href="#i-plus"/></svg>保存当前</button></div>
+        <div id="customTemplates" class="custom-templates"></div>
+        <div class="template-footnote"><svg class="icon"><use href="#i-sliders"/></svg><p>选中模板后，切换「自定义」<br>还可以调整字体、配色和专属底图。</p></div>
+      </div>
+      <div id="settingsPane" class="settings-pane" role="tabpanel" hidden>
+        <details class="setting-group" open>
+          <summary><span>文字与排版</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content">
+            <div class="field"><label for="titleFontSelect">标题字体</label><select id="titleFontSelect"></select></div>
+            <div class="field"><label for="fontSelect">正文字体</label><select id="fontSelect"></select></div>
+            <div class="field inline-field"><label for="fontUploadTarget">上传后应用到</label><select id="fontUploadTarget"><option value="both">标题与正文</option><option value="title">仅标题</option><option value="body">仅正文</option></select></div>
+            <label class="file-upload small-upload" for="fontUpload"><svg class="icon"><use href="#i-upload"/></svg><span>上传自己的字体</span><input id="fontUpload" type="file" accept=".ttf,.otf,.woff,.woff2"></label>
+            <div class="range-field"><div class="field-label-row"><label for="titleSize">标题字号</label><output for="titleSize" data-value-for="titleSize">64</output></div><input id="titleSize" type="range" min="24" max="120" value="64"></div>
+            <div class="range-field"><div class="field-label-row"><label for="bodySize">正文字号</label><output for="bodySize" data-value-for="bodySize">32</output></div><input id="bodySize" type="range" min="16" max="72" step="1" value="32"></div>
+            <div class="range-field"><div class="field-label-row"><label for="lineHeight">行间距</label><output for="lineHeight" data-value-for="lineHeight">1.65</output></div><input id="lineHeight" type="range" min="1.2" max="2.2" step="0.05" value="1.65"></div>
+            <div class="range-field"><div class="field-label-row"><label for="paragraphGap">段落间距</label><output for="paragraphGap" data-value-for="paragraphGap">18</output></div><input id="paragraphGap" type="range" min="0" max="40" value="18"></div>
+            <div class="field inline-field"><label for="alignSelect">对齐方式</label><select id="alignSelect"><option value="left">左对齐</option><option value="center">居中对齐</option></select></div>
+          </div>
+        </details>
+        <details class="setting-group" open>
+          <summary><span>文字与背景配色</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content color-fields"><label class="color-field" for="titleColor"><input id="titleColor" type="color" value="#242d32"><span>标题色</span></label><label class="color-field" for="bgColor"><input id="bgColor" type="color" value="#f8f3e8"><span>背景色</span></label><label class="color-field" for="textColor"><input id="textColor" type="color" value="#332d28"><span>正文色</span></label><label class="color-field" for="accentColor"><input id="accentColor" type="color" value="#e8795b"><span>强调色</span></label></div>
+        </details>
+        <details class="setting-group" open>
+          <summary><span>文字不透明度</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content">
+            <div class="range-field"><div class="field-label-row"><label for="titleOpacity">标题不透明度</label><output for="titleOpacity" data-value-for="titleOpacity">100%</output></div><input id="titleOpacity" type="range" min="0" max="1" step="0.01" value="1"></div>
+            <div class="range-field"><div class="field-label-row"><label for="bodyOpacity">正文不透明度</label><output for="bodyOpacity" data-value-for="bodyOpacity">100%</output></div><input id="bodyOpacity" type="range" min="0" max="1" step="0.01" value="1"></div>
+            <p class="setting-hint">0% 完全透明，100% 完全显示；正文中的小标题跟随标题颜色与不透明度。</p>
+          </div>
+        </details>
+        <details class="setting-group" open>
+          <summary><span>模板底图与纹样</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content">
+            <p class="setting-hint">适用于全部内置模板。上方「背景色」可自由选色，降低不透明度会淡化至白色，文字保持清晰。</p>
+            <div class="background-palette" role="group" aria-label="柔和底色快捷选择">
+              <button type="button" data-bg-color="#FFF0F4" style="--swatch:#FFF0F4" aria-label="樱花粉" title="樱花粉"></button>
+              <button type="button" data-bg-color="#FFF8E9" style="--swatch:#FFF8E9" aria-label="奶油白" title="奶油白"></button>
+              <button type="button" data-bg-color="#F1EBFA" style="--swatch:#F1EBFA" aria-label="香芋紫" title="香芋紫"></button>
+              <button type="button" data-bg-color="#EAF3EC" style="--swatch:#EAF3EC" aria-label="鼠尾草绿" title="鼠尾草绿"></button>
+              <button type="button" data-bg-color="#EBF4FC" style="--swatch:#EBF4FC" aria-label="雾蓝色" title="雾蓝色"></button>
+              <button type="button" data-bg-color="#F8ECE4" style="--swatch:#F8ECE4" aria-label="燕麦杏" title="燕麦杏"></button>
+            </div>
+            <div class="range-field"><div class="field-label-row"><label for="bgColorOpacity">底图不透明度</label><output for="bgColorOpacity" data-value-for="bgColorOpacity">100%</output></div><input id="bgColorOpacity" type="range" min="0" max="1" step="0.01" value="1"></div>
+            <div class="range-field"><div class="field-label-row"><label for="bgPatternOpacity">纹样不透明度</label><output for="bgPatternOpacity" data-value-for="bgPatternOpacity">100%</output></div><input id="bgPatternOpacity" type="range" min="0" max="1" step="0.01" value="1"></div>
+            <button id="resetBackgroundBtn" class="button subtle-button full-width" type="button">恢复当前模板底图与纹样</button>
+          </div>
+        </details>
+        <details class="setting-group" open>
+          <summary><span>上传自己的底图</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content">
+            <label class="file-upload background-upload" for="bgUpload"><svg class="icon"><use href="#i-image"/></svg><strong>上传一张喜欢的底图</strong><span>JPG / PNG / WebP，建议 3:4</span><input id="bgUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+            <img id="bgPreview" class="background-preview" alt="已上传的模板底图" hidden>
+            <button id="removeBgBtn" class="button subtle-button full-width" type="button">移除底图</button>
+            <div class="field inline-field"><label for="bgFit">图片适配</label><select id="bgFit"><option value="cover">填满画布</option><option value="contain">完整显示</option></select></div>
+            <div class="range-field"><div class="field-label-row"><label for="bgOpacity">图片不透明度</label><output for="bgOpacity" data-value-for="bgOpacity">1</output></div><input id="bgOpacity" type="range" min="0" max="1" step="0.01" value="1"></div>
+            <div class="range-field"><div class="field-label-row"><label for="bgOverlay">背景色遮罩</label><output for="bgOverlay" data-value-for="bgOverlay">0</output></div><input id="bgOverlay" type="range" min="0" max="1" step="0.05" value="0"></div>
+            <div class="range-field"><div class="field-label-row"><label for="bgX">水平位置</label><output for="bgX" data-value-for="bgX">50</output></div><input id="bgX" type="range" min="0" max="100" value="50"></div>
+            <div class="range-field"><div class="field-label-row"><label for="bgY">垂直位置</label><output for="bgY" data-value-for="bgY">50</output></div><input id="bgY" type="range" min="0" max="100" value="50"></div>
+          </div>
+        </details>
+        <details class="setting-group">
+          <summary><span>画布留白</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content">
+            <div class="range-field"><div class="field-label-row"><label for="padding">左右留白</label><output for="padding" data-value-for="padding">68</output></div><input id="padding" type="range" min="32" max="120" value="68"></div>
+            <div class="range-field"><div class="field-label-row"><label for="paddingTop">上边距</label><output for="paddingTop" data-value-for="paddingTop">68</output></div><input id="paddingTop" type="range" min="32" max="200" value="68"></div>
+            <div class="range-field"><div class="field-label-row"><label for="paddingBottom">下边距</label><output for="paddingBottom" data-value-for="paddingBottom">68</output></div><input id="paddingBottom" type="range" min="32" max="200" value="68"></div>
+          </div>
+        </details>
+        <details class="setting-group">
+          <summary><span>卡片细节</span><span class="details-chevron" aria-hidden="true"></span></summary>
+          <div class="setting-content">
+            <label class="setting-checkbox"><span>每页重复标题</span><input id="repeatTitle" type="checkbox"></label>
+            <label class="setting-checkbox"><span>显示页码</span><input id="showPageNumber" type="checkbox" checked></label>
+            <label class="setting-checkbox"><span>标题装饰</span><input id="titleDecor" type="checkbox" checked></label>
+            <div class="field"><label for="watermarkInput">自定义水印</label><input id="watermarkInput" type="text" placeholder="留空即无水印" maxlength="80"></div>
+          </div>
+        </details>
+        <div class="settings-note">调整会实时应用到全部卡片<br>喜欢这套搭配？可以保存为「我的风格」</div>
+      </div>
+    </aside>
+  </main>
+
+  <input id="imageUpload" class="visually-hidden-input" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+  <input id="projectUpload" class="visually-hidden-input" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="dialogRoot"></div>
+</body>
+</html>
